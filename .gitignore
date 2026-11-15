@@ -1,0 +1,11 @@
+# Gizli bilgiler: ASLA GitHub'a gitmemeli
+.env
+.env.*
+!.env.example
+
+# Kurulan paketler
+node_modules/
+
+# Kayıt dosyaları ve yedekler
+*.log
+yedek-*.json

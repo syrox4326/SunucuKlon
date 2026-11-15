@@ -1,0 +1,18 @@
+{
+  "name": "sunucu-klon-botu",
+  "version": "1.0.0",
+  "description": "SunucuKlon: Bir Discord sunucusunun yapısını (roller, kanallar, izinler, ayarlar) başka bir sunucuya kopyalar.",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "start": "node index.js",
+    "komutlari-kaydet": "node deploy-commands.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.5"
+  }
+}
