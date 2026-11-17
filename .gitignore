@@ -9,3 +9,7 @@ node_modules/
 # Kayıt dosyaları ve yedekler
 *.log
 yedek-*.json
+
+# Yerel veritabani
+veri.db
+veri.db-*
