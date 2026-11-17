@@ -121,6 +121,7 @@ async function mesajIsle(mesaj, client) {
     const b = new EmbedBuilder()
       .setColor(RENK.bilgi)
       .setAuthor({ name: 'Kayıt Yapıldı!', iconURL: ikon })
+      .setThumbnail(uye.displayAvatarURL({ size: 256 }))
       .setDescription(`✅ • ${uye} aramıza ${verilecek.map((r) => `<@&${r}>`).join(' ')} rolleriyle katıldı.`)
       .addFields(
         { name: '• Kaydı gerçekleştiren yetkili', value: `> ${mesaj.author}`, inline: true },
