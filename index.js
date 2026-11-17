@@ -1,7 +1,7 @@
 // SunucuKlon ana dosyası: botu başlatır ve slash komutlarını çalıştırır.
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, GatewayIntentBits, Collection, Events, MessageFlags, REST, Routes, PermissionFlagsBits, IntentsBitField } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, Events, MessageFlags, REST, Routes, PermissionFlagsBits, IntentsBitField, Options } = require('discord.js');
 const ayar = require('./utils/ayar');
 const { sahipMi, izinliMi, retMesaji } = require('./utils/yetki');
 const mute = require('./utils/mute');
@@ -13,7 +13,20 @@ const { hata: hataKutusu } = require('./utils/tasarim');
 ayar.ayarlariDogrula();
 
 // Sadece Guilds intent'i kullanılır (mesaj içeriği veya üye okuma yok)
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+// Düşük bellekli (ör. 100 MB) ücretsiz barındırmalar için: mesaj/tepki/durum önbelleği tutulmaz.
+// Bot mesajları sadece olay anında okur, geçmişe önbellekten bakmaz.
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds],
+  makeCache: Options.cacheWithLimits({
+    ...Options.DefaultMakeCacheSettings,
+    MessageManager: 0,
+    ReactionManager: 0,
+    PresenceManager: 0,
+    VoiceStateManager: 0,
+    StageInstanceManager: 0,
+    GuildScheduledEventManager: 0,
+  }),
+});
 
 // commands/ klasöründeki tüm komutları yükle
 client.commands = new Collection();
