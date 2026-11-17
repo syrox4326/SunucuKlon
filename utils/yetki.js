@@ -14,4 +14,15 @@ function yetkiliMi(interaction, enAzRolAdi) {
   return interaction.member.roles.cache.some((r) => izinli.has(r.id));
 }
 
-module.exports = { sahipMi, yetkiliMi };
+// Kick/ban gibi işlemlerde ortak kontrol. Sorun varsa hata metni, yoksa null döner.
+function hedefHatasi(interaction, client, kullanici, uye) {
+  if (kullanici.id === interaction.user.id) return 'Bu işlemi kendine uygulayamazsın.';
+  if (kullanici.id === client.user.id) return 'Beni bu işlemle hedef alamazsın.';
+  if (kullanici.id === interaction.guild.ownerId) return 'Sunucu sahibine bu işlem uygulanamaz.';
+  if (uye && !sahipMi(interaction.user.id) && uye.roles.highest.position >= interaction.member.roles.highest.position) {
+    return 'Senin rolüne eşit veya senden yüksek roldeki birine bu işlemi uygulayamazsın.';
+  }
+  return null;
+}
+
+module.exports = { sahipMi, yetkiliMi, hedefHatasi };

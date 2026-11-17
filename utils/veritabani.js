@@ -21,6 +21,26 @@ db.exec(`
     sebep      TEXT,
     PRIMARY KEY (guild_id, user_id)
   );
+
+  CREATE TABLE IF NOT EXISTS kickler (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    guild_id   TEXT NOT NULL,
+    user_id    TEXT NOT NULL,
+    kullanici  TEXT,                    -- o anki kullanıcı adı
+    yetkili_id TEXT NOT NULL,
+    sebep      TEXT,
+    zaman      INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS banlar (
+    guild_id   TEXT NOT NULL,
+    user_id    TEXT NOT NULL,
+    kullanici  TEXT,
+    yetkili_id TEXT NOT NULL,
+    sebep      TEXT,
+    zaman      INTEGER NOT NULL,
+    PRIMARY KEY (guild_id, user_id)
+  );
 `);
 
 // Bir sunucunun yetkili rollerini tamamen yenisiyle değiştirir.

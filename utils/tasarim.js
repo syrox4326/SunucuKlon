@@ -2,10 +2,10 @@
 const path = require('node:path');
 const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
 
-const RENK = { mute: 0xe5484d, unmute: 0x30a46c, bilgi: 0x6a7bff };
-const MUTE_GIF = path.join(__dirname, '..', 'assets', 'mute.gif');
-
-const muteGifi = () => new AttachmentBuilder(MUTE_GIF, { name: 'mute.gif' });
+const RENK = { mute: 0xe5484d, unmute: 0x30a46c, kick: 0xf97316, ban: 0xb91c1c, bilgi: 0x6a7bff };
+// assets/<ad>.gif dosyasını mesaja ekler; embed'de .setImage('attachment://<ad>.gif') ile gösterilir
+const gif = (ad) => new AttachmentBuilder(path.join(__dirname, '..', 'assets', `${ad}.gif`), { name: `${ad}.gif` });
+const muteGifi = () => gif('mute');
 
 // Ortak iskelet: bot adı üstte, altbilgi + zaman damgası
 function taslak(client, renk, baslik) {
@@ -24,4 +24,4 @@ const uyeSatiri = (kullanici) => `${kullanici}\n\`${kullanici.id}\``;
 const hata = (metin) => new EmbedBuilder().setColor(RENK.mute).setDescription(metin);
 const bilgi = (metin) => new EmbedBuilder().setColor(RENK.bilgi).setDescription(metin);
 
-module.exports = { hata, bilgi, RENK, taslak, alan, zaman, uyeSatiri, muteGifi };
+module.exports = { gif, hata, bilgi, RENK, taslak, alan, zaman, uyeSatiri, muteGifi };
