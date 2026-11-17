@@ -138,5 +138,5 @@ async function yeniKanal(kanal) {
 }
 
 module.exports = {
-  ROL_ADI, mutedRolunuGetir, mutedRolunuHazirla, muteUygula, muteKaldir, muteGetir, zamanlayiciyiBaslat, yeniKanal,
+  ROL_ADI, mutedRolunuGetir, mutedRolunuHazirla, muteUygula, muteKaldir, muteGetir, muteSil, zamanlayiciyiBaslat, yeniKanal,
 };
