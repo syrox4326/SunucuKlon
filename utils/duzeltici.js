@@ -113,7 +113,16 @@ async function adimRoller(ctx) {
     .map((r) => r.id);
   const mevcut = istenen.map((id) => hedef.roles.cache.get(id)).sort((a, b) => a.position - b.position).map((r) => r.id);
   if (!ayniDizi(istenen, mevcut)) {
-    const yuvalar = istenen.map((id) => hedef.roles.cache.get(id).position).sort((a, b) => a - b);
+    let yuvalar = istenen.map((id) => hedef.roles.cache.get(id).rawPosition).sort((a, b) => a - b);
+    // Pozisyonlar eşit/çakışıyorsa (önceki başarısız sıralamadan kalma) 1..n şeklinde yeniden dağıt (0 = @everyone)
+    if (new Set(yuvalar).size !== yuvalar.length) yuvalar = istenen.map((_, i) => i + 1);
+    // Bot rolü, taşınacak en yüksek konumun üstünde olmalı; yoksa Discord "Missing Permissions" verir
+    if (!sec.kuruCalistirma && ben.roles.highest.rawPosition <= yuvalar[yuvalar.length - 1]) {
+      ctx.rapor.hatalar.push(`Rol sıralaması yapılamadı: "${ben.roles.highest.name}" rolü listenin en üstünde değil. Sunucu Ayarları > Roller'de bu rolü en üste sürükleyip /duzelt'i tekrar çalıştır.`);
+      islem.hataSayisi++;
+      islem.adim();
+      return;
+    }
     await degistir(ctx, 'rolSira', `Rol sıralaması düzeltildi (${istenen.length} rol)`, () =>
       hedef.roles.setPositions(istenen.map((id, i) => ({ role: id, position: yuvalar[i] }))),
     );
