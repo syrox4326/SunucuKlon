@@ -21,7 +21,7 @@ Bu rehber hiç teknik bilgisi olmayan biri için yazıldı. Adımları sırayla 
 - ❌ Mesajlar (kesinlikle)
 - ❌ Üyeler ve üyelerin rolleri
 - ❌ Webhook'lar, davetler
-- ❌ Botlar ve bot rolleri (bunlar için `/botlari_listele` komutuyla ekleme linki üretilir)
+- ❌ Botlar ve bot rolleri (bunlar için `/botlari-ekle` komutuyla ekleme linki üretilir)
 - ❌ Belirli bir üyeye özel kanal izinleri (sadece rol izinleri kopyalanır)
 
 ---
@@ -171,25 +171,24 @@ Nasıl çalışır:
 
 > 💡 **Önerim:** İlk seferde mutlaka `kuru_calistirma:True` ile dene.
 
-### `/durum`
-Devam eden işlemin ilerlemesini gösterir (hangi aşamada, kaç tanesi bitti, kaç hata).
+### `/duzelt kaynak_id hedef_id`
+Hedefi kaynakla karşılaştırıp yanlış sıra, izin ve ayarları düzeltir. Hiçbir şey silmez.
 
-### `/iptal`
-Devam eden işlemi güvenle durdurur. Bot şu anki küçük adımı bitirip durur ve neyin yapıldığını raporlar. (Yapılanlar geri alınmaz.)
+### `/islem durum` ve `/islem iptal`
+`durum`: devam eden işlemin ilerlemesini gösterir (hangi aşamada, kaç tanesi bitti, kaç hata).
+`iptal`: işlemi güvenle durdurur. Bot şu anki küçük adımı bitirip durur ve neyin yapıldığını raporlar. (Yapılanlar geri alınmaz.)
 
-### `/yedek_al kaynak_id`
-Sunucu yapısını bir **JSON dosyası** olarak sana gönderir. Dosyayı bilgisayarına kaydet. İçinde mesaj veya üye bilgisi yoktur.
+### `/yedek al kaynak_id` ve `/yedek yukle hedef_id dosya [temizle] [emoji] [kuru_calistirma]`
+`al`: sunucu yapısını bir **JSON dosyası** olarak gönderir (mesaj veya üye bilgisi yoktur).
+`yukle`: aldığın JSON dosyasını hedefe yükler. Seçenekler `/klonla` ile aynıdır, onay adımları da aynı şekilde çalışır.
 
-### `/yedekten_yukle hedef_id dosya [temizle] [emoji] [kuru_calistirma]`
-`/yedek_al` ile aldığın JSON dosyasını seçip hedefe yükler. Seçenekler `/klonla` ile aynıdır, onay adımları da aynı şekilde çalışır.
-
-### `/botlari_listele kaynak_id hedef_id`
-Kaynak sunucudaki botları bulur (kendi botumuz hariç) ve her biri için **hedefe ekleme linki** üretir. Linkler sayfalara bölünür.
-- Hedefte zaten olan botlar **"Zaten ekli"** diye işaretlenir.
-- Linklere sırayla tıklayıp yetkilendir.
-- Botların **kendi ayarları kopyalanmaz** (her bot kendi ayarını ister).
+### `/botlari-ekle kaynak_id hedef_id [haric]`
+Kaynak sunucudaki botları bulur (kendi botumuz hariç) ve hedefe **ekleme linklerini** gönderir.
+- `haric`: eklenmesini istemediğin botların adları, virgülle ayrılır (örn. `FRPM Manager, MEE6`).
+- Hedefte zaten olan botlar listeden çıkarılır.
+- Linklere sırayla tıklayıp yetkilendir. Botların kendi ayarları kopyalanmaz.
 - Özel (herkese açık olmayan) botların linki çalışmayabilir.
-- Not: Bu bot üye listesini okumaz. Botları, Discord'un onlara otomatik verdiği "yönetilen rol" üzerinden bulur. Hiç rolü/izni olmayan bir bot listede çıkmayabilir.
+- Botlar, Discord'un onlara otomatik verdiği "yönetilen rol" üzerinden bulunur. Hiç rolü/izni olmayan bir bot çıkmayabilir.
 
 ---
 
@@ -222,13 +221,13 @@ Kaynak sunucudaki botları bulur (kendi botumuz hariç) ve her biri için **hede
 - Token ve ayarlar sadece `.env` dosyasında durur. `.gitignore` bu dosyanın GitHub'a gitmesini engeller. Repoya sadece boş değerli `.env.example` girer.
 - Tüm komutlar sadece `OWNER_ID`'deki kişiye açıktır.
 - Bot sadece `Guilds` intent'ini kullanır. Mesaj içeriği veya üye listesi okumaz.
-- `/yedekten_yukle` yalnızca Discord'un kendi görsel adreslerinden (`cdn.discordapp.com`) görsel indirir.
+- `/yedek yukle` yalnızca Discord'un kendi görsel adreslerinden (`cdn.discordapp.com`) görsel indirir.
 
 ## 📁 Dosya yapısı
 ```
 index.js              Botu başlatır
 deploy-commands.js    Slash komutlarını Discord'a kaydeder
-commands/             Komutlar (klonla, durum, iptal, yedek_al, yedekten_yukle, botlari_listele)
+commands/             Komutlar (klonla, duzelt, islem, yedek, botlari-ekle)
 utils/                Yardımcı kodlar (yapı okuma, klonlama motoru, kontroller, rapor)
 .env.example          Ayar dosyası örneği (boş değerlerle)
 ```

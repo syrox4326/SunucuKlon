@@ -1,5 +1,5 @@
 // Bir sunucunun yapısını okuyup düz bir JSON nesnesine çevirir (yedek formatı).
-// Aynı format hem /klonla hem /yedek_al hem de /yedekten_yukle tarafından kullanılır.
+// Aynı format hem /klonla hem de /yedek tarafından kullanılır.
 const { ChannelType, OverwriteType } = require('discord.js');
 
 const SURUM = 1;

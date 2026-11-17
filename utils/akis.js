@@ -1,4 +1,4 @@
-// /klonla ve /yedekten_yukle için ortak akış:
+// /klonla ve /yedek yukle için ortak akış:
 // ön kontrol > (kuru çalıştırma) > özet + onay > (temizle için ikinci onay) > çalıştır > rapor
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const islemYonetimi = require('./islem');
@@ -42,7 +42,7 @@ async function klonAkisi(interaction, { hedef, yapi: hamYapi, sec, baslik }) {
 
   // 0) Aynı anda tek işlem
   if (islemYonetimi.aktifGetir()) {
-    return interaction.editReply('⏳ Şu anda devam eden bir işlem var. Durumu görmek için `/durum`, durdurmak için `/iptal` yaz.');
+    return interaction.editReply('⏳ Şu anda devam eden bir işlem var. Durumu görmek için `/islem durum`, durdurmak için `/islem iptal` yaz.');
   }
 
   // 1) Ön kontrol

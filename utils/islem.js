@@ -1,4 +1,4 @@
-// Devam eden (tek bir) işlemin durumunu tutar. /durum ve /iptal komutları buradan okur.
+// Devam eden (tek bir) işlemin durumunu tutar. /islem komutu buradan okur.
 const { sureYaz, ilerlemeCubugu } = require('./yardimci');
 
 // İptal istendiğinde işlemi güvenle durdurmak için fırlatılan özel sinyal.

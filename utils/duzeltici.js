@@ -69,7 +69,7 @@ async function adimRoller(ctx) {
     else eslesmeyenYonetilen++;
   }
   if (eslesmeyenYonetilen > 0) {
-    ctx.rapor.notlar.push(`${eslesmeyenYonetilen} bot/yönetilen rol hedefte bulunamadı (o botlar hedefe eklenmemiş). Bu rollere ait kanal izinleri uygulanamaz. /botlari_listele ile botları ekleyip /duzelt'i tekrar çalıştırabilirsin.`);
+    ctx.rapor.notlar.push(`${eslesmeyenYonetilen} bot/yönetilen rol hedefte bulunamadı (o botlar hedefe eklenmemiş). Bu rollere ait kanal izinleri uygulanamaz. /botlari-ekle ile botları ekleyip /duzelt'i tekrar çalıştırabilirsin.`);
   }
 
   // Normal roller: ada göre eşle

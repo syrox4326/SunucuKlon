@@ -17,7 +17,7 @@ class IlerlemeMesaji {
       .setColor(0x5865f2)
       .setTitle(`⚙️ ${this.islem.tip === 'klonla' ? 'Klonlama' : 'İşlem'} devam ediyor`)
       .setDescription(`**${this.islem.baslik}**\n\n${this.islem.durumMetni()}`)
-      .setFooter({ text: 'Durumu görmek için /durum, durdurmak için /iptal' });
+      .setFooter({ text: 'Durumu görmek için /islem durum, durdurmak için /islem iptal' });
   }
 
   async guncelle() {

@@ -34,7 +34,7 @@ module.exports = {
     if (kaynakId === hedefId) return interaction.editReply('❌ Kaynak ve hedef aynı sunucu olamaz.');
 
     if (islemYonetimi.aktifGetir()) {
-      return interaction.editReply('⏳ Şu anda devam eden bir işlem var. Durumu görmek için `/durum`, durdurmak için `/iptal` yaz.');
+      return interaction.editReply('⏳ Şu anda devam eden bir işlem var. Durumu görmek için `/islem durum`, durdurmak için `/islem iptal` yaz.');
     }
 
     let kaynak, hedef;
