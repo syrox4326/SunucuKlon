@@ -13,9 +13,9 @@ function maddeler(liste, adet = 6) {
 function raporUret(rapor, { baslik, sureMs, emojiSecili }) {
   const c = rapor.sayac;
   const renk = rapor.iptal ? 0xfee75c : rapor.hatalar.length ? 0xfaa61a : 0x57f287;
-  const durum = rapor.iptal ? '🛑 İşlem iptal edildi' : rapor.hatalar.length ? '⚠️ İşlem bitti (bazı hatalarla)' : '✅ İşlem başarıyla bitti';
+  const durum = rapor.iptal ? '🛑 İşlem iptal edildi' : rapor.hatalar.length ? '⚠️ İşlem bitti (bazı hatalarla)' : rapor.basariBasligi || '✅ İşlem başarıyla bitti';
 
-  const basarili = [
+  const basarili = rapor.ozelBasarili || [
     c.silinenKanal || c.silinenRol ? `Silinen: ${c.silinenKanal} kanal/kategori, ${c.silinenRol} rol` : null,
     `Rol: ${c.rol}`,
     `Kategori: ${c.kategori}`,
@@ -53,9 +53,10 @@ function raporUret(rapor, { baslik, sureMs, emojiSecili }) {
     '',
     '--- NOTLAR ---',
     ...(rapor.notlar.length ? rapor.notlar : ['Yok']),
+    ...(rapor.ayrintilar ? ['', `--- DEĞİŞİKLİKLER (${rapor.ayrintilar.length}) ---`, ...(rapor.ayrintilar.length ? rapor.ayrintilar : ['Fark bulunamadı'])] : []),
   ].join('\n');
 
-  const dosya = new AttachmentBuilder(Buffer.from(metin, 'utf8'), { name: 'klon-raporu.txt' });
+  const dosya = new AttachmentBuilder(Buffer.from(metin, 'utf8'), { name: rapor.dosyaAdi || 'klon-raporu.txt' });
   return { embeds: [embed], files: [dosya], content: '' };
 }
 

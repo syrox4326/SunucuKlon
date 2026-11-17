@@ -501,4 +501,4 @@ function kuruPlan(hedef, yapi, sec) {
   return s;
 }
 
-module.exports = { uygula, kuruPlan, hataMetni };
+module.exports = { uygula, kuruPlan, hataMetni, guvenli, atla, kanalAyarlari, temizNesne };
