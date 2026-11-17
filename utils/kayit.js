@@ -179,4 +179,13 @@ async function girisMesaji(uye, ayar) {
     .catch((err) => console.error('[kayit] giriş mesajı:', err.message));
 }
 
-module.exports = { ayarGetir, ayarKaydet, mesajIsle, uyeGirdi, girisMesaji, tarihYaz, guvenilirlik };
+// Kayıtsıza atılırken roller: korunan (bot/entegrasyon + aktif mute rolü), botun yönetemediği, alınacak
+function rolPlani(uye, kayitsizRol, botEnYuksek) {
+  const mevcut = [...uye.roles.cache.values()].filter((r) => r.id !== uye.guild.id && r.id !== kayitsizRol.id);
+  const korunan = mevcut.filter((r) => r.managed || r.name.toLowerCase() === 'muted');
+  const alinamayan = mevcut.filter((r) => !korunan.includes(r) && r.position >= botEnYuksek);
+  const alinacak = mevcut.filter((r) => !korunan.includes(r) && !alinamayan.includes(r));
+  return { korunan, alinamayan, alinacak };
+}
+
+module.exports = { rolPlani, ayarGetir, ayarKaydet, mesajIsle, uyeGirdi, girisMesaji, tarihYaz, guvenilirlik };

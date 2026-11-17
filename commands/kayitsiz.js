@@ -2,7 +2,7 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { RENK, taslak, alan, uyeSatiri, hata, bilgi } = require('../utils/tasarim');
 const { hedefHatasi } = require('../utils/yetki');
-const { ayarGetir } = require('../utils/kayit');
+const { ayarGetir, rolPlani } = require('../utils/kayit');
 const { db } = require('../utils/veritabani');
 
 const ROL_GOSTERIM_LIMITI = 15;
@@ -35,10 +35,7 @@ module.exports = {
     if (!kayitsizRol) return reddet('Ayarlardaki kayıtsız rolü silinmiş. `/kayıtkur` ile sistemi yeniden kur.');
 
     // Alınacak roller: bot yönetebiliyorsa; entegrasyon rolleri (Booster vb.) ve aktif mute rolü kalır
-    const mevcut = [...uye.roles.cache.values()].filter((r) => r.id !== interaction.guildId && r.id !== kayitsizRol.id);
-    const korunan = mevcut.filter((r) => r.managed || r.name.toLowerCase() === 'muted');
-    const alinamayan = mevcut.filter((r) => !r.managed && r.name.toLowerCase() !== 'muted' && r.position >= benimEnYuksek);
-    const alinacak = mevcut.filter((r) => !korunan.includes(r) && !alinamayan.includes(r));
+    const { korunan, alinamayan, alinacak } = rolPlani(uye, kayitsizRol, benimEnYuksek);
 
     const zatenKayitsiz = uye.roles.cache.has(kayitsizRol.id) && alinacak.length === 0;
     if (zatenKayitsiz) return interaction.reply({ embeds: [bilgi(`${uye} zaten kayıtsız durumda.`)], flags: MessageFlags.Ephemeral });
