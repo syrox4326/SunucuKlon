@@ -1,5 +1,6 @@
 // /mute kullanici sure [sebep] : Muted rolü verir, süre dolunca otomatik açılır. (Trial Moderator ve üstü)
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { RENK, taslak, alan, zaman, uyeSatiri, muteGifi, hata } = require('../utils/tasarim');
 const { sureCoz, sureYaz } = require('../utils/sure');
 const { muteUygula, muteGetir } = require('../utils/mute');
 const { sahipMi } = require('../utils/yetki');
@@ -17,39 +18,46 @@ module.exports = {
 
   async execute(interaction, client) {
     const sure = sureCoz(interaction.options.getString('sure'));
-    if (sure.hata) return interaction.reply({ content: '❌ ' + sure.hata, flags: MessageFlags.Ephemeral });
+    if (sure.hata) return interaction.reply({ embeds: [hata(sure.hata)], flags: MessageFlags.Ephemeral });
 
     const hedef = interaction.options.getMember('kullanici');
-    if (!hedef) return interaction.reply({ content: '❌ Bu kişi sunucuda değil.', flags: MessageFlags.Ephemeral });
-    if (hedef.id === interaction.user.id) return interaction.reply({ content: '❌ Kendini susturamazsın.', flags: MessageFlags.Ephemeral });
-    if (hedef.id === client.user.id || hedef.user.bot) return interaction.reply({ content: '❌ Botlar susturulamaz.', flags: MessageFlags.Ephemeral });
-    if (hedef.id === interaction.guild.ownerId) return interaction.reply({ content: '❌ Sunucu sahibi susturulamaz.', flags: MessageFlags.Ephemeral });
+    if (!hedef) return interaction.reply({ embeds: [hata('Bu kişi sunucuda değil.')], flags: MessageFlags.Ephemeral });
+    if (hedef.id === interaction.user.id) return interaction.reply({ embeds: [hata('Kendini susturamazsın.')], flags: MessageFlags.Ephemeral });
+    if (hedef.id === client.user.id || hedef.user.bot) return interaction.reply({ embeds: [hata('Botlar susturulamaz.')], flags: MessageFlags.Ephemeral });
+    if (hedef.id === interaction.guild.ownerId) return interaction.reply({ embeds: [hata('Sunucu sahibi susturulamaz.')], flags: MessageFlags.Ephemeral });
 
     // Yetkili, kendi rolüne eşit veya üstündeki birini susturamaz (bot sahibi hariç)
     if (!sahipMi(interaction.user.id) && hedef.roles.highest.position >= interaction.member.roles.highest.position) {
-      return interaction.reply({ content: '❌ Senin rolüne eşit veya senden yüksek roldeki birini susturamazsın.', flags: MessageFlags.Ephemeral });
+      return interaction.reply({ embeds: [hata('Senin rolüne eşit veya senden yüksek roldeki birini susturamazsın.')], flags: MessageFlags.Ephemeral });
     }
 
     await interaction.deferReply();
     const sebep = interaction.options.getString('sebep');
     try {
       const { bitis } = await muteUygula(hedef, sure.ms, interaction.user.id, sebep);
-      const unix = Math.floor(bitis / 1000);
-      const e = new EmbedBuilder()
-        .setColor(0xed4245)
-        .setTitle('🔇 Susturuldu')
-        .setDescription(`${hedef} **${sureYaz(sure.ms)}** boyunca susturuldu.`)
+      const e = taslak(client, RENK.mute, 'Üye susturuldu')
+        .setThumbnail(hedef.displayAvatarURL())
         .addFields(
-          { name: 'Bitiş', value: `<t:${unix}:f> (<t:${unix}:R>)`, inline: true },
-          { name: 'Yetkili', value: `${interaction.user}`, inline: true },
-          { name: 'Sebep', value: sebep || 'Belirtilmedi' },
-        );
-      await interaction.editReply({ embeds: [e] });
-      hedef.send(`🔇 **${interaction.guild.name}** sunucusunda **${sureYaz(sure.ms)}** susturuldun.\nSebep: ${sebep || 'Belirtilmedi'}\nBitiş: <t:${unix}:f>`).catch(() => {});
+          alan('Üye', uyeSatiri(hedef.user)),
+          alan('Süre', sureYaz(sure.ms)),
+          alan('Bitiş', zaman(bitis)),
+          alan('Yetkili', `${interaction.user}`),
+          alan('Sebep', sebep),
+        )
+        .setImage('attachment://mute.gif');
+      await interaction.editReply({ embeds: [e], files: [muteGifi()] });
+
+      const dm = new EmbedBuilder()
+        .setColor(RENK.mute)
+        .setAuthor({ name: interaction.guild.name, iconURL: interaction.guild.iconURL() ?? undefined })
+        .setTitle('Susturuldun')
+        .addFields(alan('Süre', sureYaz(sure.ms)), alan('Bitiş', zaman(bitis)), alan('Sebep', sebep))
+        .setTimestamp();
+      hedef.send({ embeds: [dm] }).catch(() => {});
     } catch (e) {
       console.error('[mute]', e);
       const ipucu = e.code === 50013 ? ' Botun rolü "Muted" rolünün üstünde olmalı ve "Rolleri Yönet" izni olmalı.' : '';
-      await interaction.editReply('❌ Susturulamadı: ' + e.message + ipucu);
+      await interaction.editReply({ embeds: [hata('Susturulamadı: ' + e.message + ipucu)] });
     }
   },
 };

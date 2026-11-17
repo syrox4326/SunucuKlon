@@ -5,6 +5,7 @@ const { Client, GatewayIntentBits, Collection, Events, MessageFlags } = require(
 const ayar = require('./utils/ayar');
 const { sahipMi, yetkiliMi } = require('./utils/yetki');
 const mute = require('./utils/mute');
+const { hata: hataKutusu } = require('./utils/tasarim');
 
 ayar.ayarlariDogrula();
 
@@ -44,8 +45,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
   // sunucudaki yetkili rollere (veritabanı) de açılır: yetki: { enAzRol: 'Trial Moderator' }
   const izinli = komut.yetki?.enAzRol ? yetkiliMi(interaction, komut.yetki.enAzRol) : sahipMi(interaction.user.id);
   if (!izinli) {
-    const mesaj = komut.yetki?.enAzRol ? `⛔ Bu komutu en az **${komut.yetki.enAzRol}** rolündeki yetkililer kullanabilir.` : '⛔ Bu komutu sadece bot sahibi kullanabilir.';
-    return interaction.reply({ content: mesaj, flags: MessageFlags.Ephemeral });
+    const mesaj = komut.yetki?.enAzRol ? `Bu komutu en az **${komut.yetki.enAzRol}** rolündeki yetkililer kullanabilir.` : 'Bu komutu sadece bot sahibi kullanabilir.';
+    return interaction.reply({ embeds: [hataKutusu(mesaj)], flags: MessageFlags.Ephemeral });
   }
 
   try {

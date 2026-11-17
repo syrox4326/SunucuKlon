@@ -1,5 +1,6 @@
 // /unmute kullanici [sebep] : susturmayı erken kaldırır. (Trial Moderator ve üstü)
-const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
+const { RENK, taslak, alan, uyeSatiri, hata, bilgi } = require('../utils/tasarim');
 const { muteKaldir } = require('../utils/mute');
 
 module.exports = {
@@ -12,22 +13,21 @@ module.exports = {
     .setDefaultMemberPermissions(null)
     .setDMPermission(false),
 
-  async execute(interaction) {
+  async execute(interaction, client) {
     const kullanici = interaction.options.getUser('kullanici');
     const sebep = interaction.options.getString('sebep');
     await interaction.deferReply();
     try {
       const kaldirildi = await muteKaldir(interaction.guild, kullanici.id, sebep || `${interaction.user.id} tarafından`);
-      if (!kaldirildi) return interaction.editReply({ content: `ℹ️ ${kullanici} zaten susturulmuş değil.`, allowedMentions: { parse: [] } });
-      const e = new EmbedBuilder()
-        .setColor(0x57f287)
-        .setTitle('🔊 Susturma kaldırıldı')
-        .setDescription(`${kullanici} artık konuşabilir.`)
-        .addFields({ name: 'Yetkili', value: `${interaction.user}`, inline: true }, { name: 'Sebep', value: sebep || 'Belirtilmedi', inline: true });
+      if (!kaldirildi) return interaction.editReply({ embeds: [bilgi(`${kullanici} zaten susturulmuş değil.`)] });
+      const e = taslak(client, RENK.unmute, 'Susturma kaldırıldı')
+        .setThumbnail(kullanici.displayAvatarURL())
+        .addFields(alan('Üye', uyeSatiri(kullanici)), alan('Yetkili', `${interaction.user}`));
+      if (sebep) e.addFields(alan('Sebep', sebep));
       return interaction.editReply({ embeds: [e] });
     } catch (e) {
       console.error('[unmute]', e);
-      return interaction.editReply('❌ Susturma kaldırılamadı: ' + e.message);
+      return interaction.editReply({ embeds: [hata('Susturma kaldırılamadı: ' + e.message)] });
     }
   },
 };
