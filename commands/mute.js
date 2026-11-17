@@ -11,7 +11,7 @@ module.exports = {
     .setDescription('Bir üyeyi belirli süreliğine susturur (en fazla 7 gün).')
     .addUserOption((o) => o.setName('kullanici').setDescription('Susturulacak üye').setRequired(true))
     .addStringOption((o) => o.setName('sure').setDescription('Süre: 30 dakika, 24 saat, 1 gün, 1g 12sa... (en fazla 7 gün)').setRequired(true))
-    .addStringOption((o) => o.setName('sebep').setDescription('Susturma sebebi').setMaxLength(300))
+    .addStringOption((o) => o.setName('sebep').setDescription('Susturma sebebi (zorunlu)').setRequired(true).setMaxLength(300))
     .setDefaultMemberPermissions(null)
     .setDMPermission(false),
 
