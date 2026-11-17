@@ -11,6 +11,16 @@ db.exec(`
     sira     INTEGER NOT NULL,          -- sunucudaki rol konumu (büyük = daha yüksek yetki)
     PRIMARY KEY (guild_id, rol_id)
   );
+
+  CREATE TABLE IF NOT EXISTS mutelar (
+    guild_id   TEXT NOT NULL,
+    user_id    TEXT NOT NULL,
+    bitis      INTEGER NOT NULL,        -- bitiş zamanı (ms, epoch)
+    baslangic  INTEGER NOT NULL,
+    yetkili_id TEXT NOT NULL,
+    sebep      TEXT,
+    PRIMARY KEY (guild_id, user_id)
+  );
 `);
 
 // Bir sunucunun yetkili rollerini tamamen yenisiyle değiştirir.
