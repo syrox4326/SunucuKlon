@@ -6,6 +6,18 @@ const { sahipMi } = require('./yetki');
 const { muteGetir, mutedRolunuGetir } = require('./mute');
 
 const NICK_LIMITI = 32;
+const GUN_MS = 86_400_000;
+
+// 20 Temmuz 2025 19:27 (Türkiye saati)
+const tarihYaz = (ms) =>
+  new Date(ms).toLocaleString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' });
+
+// Hesap yaşına göre güvenilirlik: 30+ gün güvenilir, 7-30 gün şüpheli, 7 günden yeni güvenilmez
+function guvenilirlik(olusturulma) {
+  const gun = (Date.now() - olusturulma) / GUN_MS;
+  return gun >= 30 ? 'Güvenilir' : gun >= 7 ? 'Şüpheli' : 'Güvenilmez';
+}
+
 const KULLANIM = '`.k @kullanıcı İsim | Yaş`  (örnek: `.k @Kerem Kerem | 44`)';
 
 const ayarGetir = (guildId) => db.prepare('SELECT * FROM kayit_ayar WHERE guild_id = ?').get(guildId);
@@ -82,17 +94,23 @@ async function mesajIsle(mesaj, client) {
   db.prepare('INSERT INTO kayitlar (guild_id, user_id, isim, yetkili_id, zaman) VALUES (?, ?, ?, ?, ?)')
     .run(mesaj.guildId, uye.id, isim, mesaj.author.id, Date.now());
 
+  const kayitSayisi = db.prepare('SELECT COUNT(*) AS n FROM kayitlar WHERE guild_id = ? AND yetkili_id = ?').get(mesaj.guildId, mesaj.author.id).n;
   const e = new EmbedBuilder()
     .setColor(RENK.unmute)
-    .setAuthor({ name: 'Kayıt tamamlandı', iconURL: client.user.displayAvatarURL() })
-    .setThumbnail(uye.displayAvatarURL())
-    .addFields(
-      alan('Üye', `${uye}\n\`${uye.id}\``),
-      alan('Yeni isim', isim),
-      alan('Verilen roller', verilecek.map((r) => `<@&${r}>`).join(' ')),
-      alan('Kaydeden', `${mesaj.author}`),
+    .setAuthor({ name: 'Kayıt Yapıldı!', iconURL: mesaj.guild.iconURL() ?? client.user.displayAvatarURL() })
+    .setDescription(
+      [
+        '> Kayıt Bilgileri',
+        '',
+        `• **Kayıt Edilen Kullanıcı:** ${uye}`,
+        `• **Kayıt Eden Kullanıcı:** ${mesaj.author}`,
+        `• **Verilen Roller:** ${verilecek.map((r) => `<@&${r}>`).join(' ')}`,
+        `• **Yeni İsim:** \`${isim}\``,
+        '• **Kayıt Türü:** `Normal`',
+      ].join('\n'),
     )
-    .setTimestamp();
+    .setThumbnail(uye.displayAvatarURL({ size: 256 }))
+    .setFooter({ text: `${mesaj.author.username}, normal kayıt sayın: ${kayitSayisi}`, iconURL: mesaj.author.displayAvatarURL() });
   if (sorunlar.length) e.addFields(alan('Uyarı', sorunlar.join('\n')));
   await mesaj.reply({ embeds: [e], allowedMentions: { parse: [], repliedUser: false } }).catch(() => {});
 
@@ -120,6 +138,38 @@ async function uyeGirdi(uye) {
     const rol = await mutedRolunuGetir(uye.guild).catch(() => null);
     if (rol) await uye.roles.add(rol, 'Aktif mute: sunucuya tekrar girdi').catch(() => {});
   }
+  if (ayar) await girisMesaji(uye, ayar);
 }
 
-module.exports = { ayarGetir, ayarKaydet, mesajIsle, uyeGirdi };
+// Kayıt kanalına "yeni kullanıcı katıldı" mesajı: kayıt yetkilisi rolü ve üye etiketlenir
+async function girisMesaji(uye, ayar) {
+  const kanal = uye.guild.channels.cache.get(ayar.kanal_id);
+  if (!kanal?.permissionsFor(uye.guild.members.me)?.has([PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks])) return;
+  const olusturulma = uye.user.createdTimestamp;
+  const e = new EmbedBuilder()
+    .setColor(RENK.bilgi)
+    .setTitle(`👋 Yeni Bir Kullanıcı Katıldı, ${uye.user.username}!`)
+    .setDescription(
+      [
+        `**${uye.guild.name}**`,
+        '',
+        `**${uye.guild.name}** sunucumuza hoş geldin **${uye.user.username}**!`,
+        `Seninle birlikte **${uye.guild.memberCount}** kişiyiz. Kayıt olmak için <@&${ayar.yetkili_rol_id}> rolündeki yetkililerimizi beklemen yeterlidir.`,
+        '',
+        `> • **Kullanıcı ID:** \`${uye.id}\``,
+        `> • **Hesap Oluşturulma Tarihi:** \`${tarihYaz(olusturulma)}\``,
+        `> • **Güvenilirlik Durumu:** \`${guvenilirlik(olusturulma)}\``,
+      ].join('\n'),
+    )
+    .setThumbnail(uye.displayAvatarURL({ size: 256 }))
+    .setFooter({ text: "Kerem's Bot Kayıt Sistemi" });
+  await kanal
+    .send({
+      content: `<@&${ayar.yetkili_rol_id}>, ${uye} sunucuya giriş yaptı.`,
+      embeds: [e],
+      allowedMentions: { roles: [ayar.yetkili_rol_id], users: [uye.id] },
+    })
+    .catch((err) => console.error('[kayit] giriş mesajı:', err.message));
+}
+
+module.exports = { ayarGetir, ayarKaydet, mesajIsle, uyeGirdi, girisMesaji, tarihYaz, guvenilirlik };
