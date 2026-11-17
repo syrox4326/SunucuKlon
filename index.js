@@ -1,10 +1,11 @@
 // SunucuKlon ana dosyası: botu başlatır ve slash komutlarını çalıştırır.
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, GatewayIntentBits, Collection, Events, MessageFlags } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, Events, MessageFlags, REST, Routes, PermissionFlagsBits, IntentsBitField } = require('discord.js');
 const ayar = require('./utils/ayar');
 const { sahipMi, yetkiliMi } = require('./utils/yetki');
 const mute = require('./utils/mute');
+const otocevap = require('./utils/otocevap');
 const { hata: hataKutusu } = require('./utils/tasarim');
 
 ayar.ayarlariDogrula();
@@ -25,6 +26,7 @@ client.on(Events.ChannelCreate, (kanal) => mute.yeniKanal(kanal));
 
 client.once(Events.ClientReady, (c) => {
   mute.zamanlayiciyiBaslat(client);
+  for (const g of c.guilds.cache.values()) otocevap.varsayilanlariEkle(g.id, c.user.id);
   console.log(`✅ ${c.user.tag} olarak giriş yapıldı. ${client.commands.size} komut yüklü, ${c.guilds.cache.size} sunucudayım.`);
 });
 
@@ -67,7 +69,36 @@ client.on(Events.InteractionCreate, async (interaction) => {
 process.on('unhandledRejection', (hata) => console.error('[Yakalanmamış hata]', hata));
 client.on(Events.Error, (hata) => console.error('[Discord istemci hatası]', hata));
 
-client.login(ayar.token()).catch((hata) => {
+// Mesaj içeriğini okumak (otomatik cevap) Developer Portal'da "Message Content Intent" açıkken mümkündür.
+// Kapalıyken bu intent'i istemek girişi tamamen bozar; bu yüzden önce uygulamanın bayraklarına bakılır.
+const MESAJ_ICERIGI_BAYRAK = (1 << 18) | (1 << 19); // GATEWAY_MESSAGE_CONTENT (+ _LIMITED)
+
+client.on(Events.MessageCreate, async (mesaj) => {
+  if (!client.mesajIcerigiAcik || mesaj.author.bot || !mesaj.guildId || !mesaj.content) return;
+  const cevap = otocevap.eslestir(mesaj.guildId, mesaj.author.id, mesaj.content);
+  if (!cevap) return;
+  const izin = mesaj.channel.permissionsFor?.(mesaj.guild.members.me);
+  if (!izin?.has(PermissionFlagsBits.SendMessages)) return;
+  await mesaj.reply({ content: cevap, allowedMentions: { parse: [], repliedUser: false } }).catch((e) => console.error('[otocevap]', e.message));
+});
+
+async function baslat() {
+  try {
+    const rest = new REST({ version: '10' }).setToken(ayar.token());
+    const uygulama = await rest.get(Routes.currentApplication());
+    client.mesajIcerigiAcik = Boolean(uygulama.flags & MESAJ_ICERIGI_BAYRAK);
+  } catch {
+    client.mesajIcerigiAcik = false;
+  }
+  if (client.mesajIcerigiAcik) {
+    client.options.intents = new IntentsBitField([GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]);
+  } else {
+    console.warn('⚠️ Message Content Intent kapalı: otomatik cevaplar çalışmaz. Developer Portal > Bot > Message Content Intent açıp botu yeniden başlat.');
+  }
+  await client.login(ayar.token());
+}
+
+baslat().catch((hata) => {
   console.error('❌ Giriş yapılamadı. Token yanlış olabilir. Ayrıntı:', hata.message);
   process.exit(1);
 });

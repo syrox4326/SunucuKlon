@@ -41,6 +41,22 @@ db.exec(`
     zaman      INTEGER NOT NULL,
     PRIMARY KEY (guild_id, user_id)
   );
+
+  CREATE TABLE IF NOT EXISTS otocevaplar (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    guild_id   TEXT NOT NULL,
+    tetik      TEXT NOT NULL,           -- normalize edilmiş (küçük harf, Türkçe karaktersiz)
+    tetik_ham  TEXT NOT NULL,           -- yazıldığı hali
+    cevap      TEXT NOT NULL,
+    ekleyen_id TEXT NOT NULL,
+    zaman      INTEGER NOT NULL,
+    UNIQUE (guild_id, tetik)
+  );
+
+  CREATE TABLE IF NOT EXISTS meta (
+    anahtar TEXT PRIMARY KEY,
+    deger   TEXT
+  );
 `);
 
 // Bir sunucunun yetkili rollerini tamamen yenisiyle değiştirir.
