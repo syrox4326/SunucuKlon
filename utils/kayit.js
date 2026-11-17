@@ -117,13 +117,19 @@ async function mesajIsle(mesaj, client) {
   // Sohbet kanalına hoş geldin bildirimi
   const sohbet = mesaj.guild.channels.cache.get(ayar.sohbet_id);
   if (sohbet?.permissionsFor(mesaj.guild.members.me)?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks])) {
+    const ikon = mesaj.guild.iconURL() ?? client.user.displayAvatarURL();
     const b = new EmbedBuilder()
       .setColor(RENK.bilgi)
-      .setThumbnail(uye.displayAvatarURL())
-      .setDescription(`Aramıza yeni biri katıldı: ${uye}\nHoş geldin, **${isim}**!`)
-      .setFooter({ text: `Kaydeden: ${mesaj.author.username}` })
-      .setTimestamp();
-    await sohbet.send({ embeds: [b], allowedMentions: { users: [uye.id] } }).catch((err) => console.error('[kayit] sohbet bildirimi:', err.message));
+      .setAuthor({ name: 'Kayıt Yapıldı!', iconURL: ikon })
+      .setDescription(`✅ • ${uye} aramıza ${verilecek.map((r) => `<@&${r}>`).join(' ')} rolleriyle katıldı.`)
+      .addFields(
+        { name: '• Kaydı gerçekleştiren yetkili', value: `> ${mesaj.author}`, inline: true },
+        { name: '• Aramıza hoş geldin', value: `> ${uye}`, inline: true },
+      )
+      .setFooter({ text: "Kerem's Bot Kayıt Sistemi", iconURL: ikon });
+    await sohbet
+      .send({ content: `> ${uye} **aramıza katıldı.**`, embeds: [b], allowedMentions: { users: [uye.id] } })
+      .catch((err) => console.error('[kayit] sohbet bildirimi:', err.message));
   }
   return true;
 }
