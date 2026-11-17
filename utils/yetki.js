@@ -40,4 +40,21 @@ function retMesaji(yetki) {
   return 'Bu komutu sadece bot sahibi kullanabilir.';
 }
 
-module.exports = { sahipMi, yetkiliMi, hedefHatasi, izinliMi, retMesaji };
+// Rol dağıtımında ortak kontrol: yetkili kendi seviyesinin üstünde rol veremez, bot da veremeyeceği rolü sunmaz.
+// Sorun varsa hata metni, yoksa null döner.
+function rolHatasi(interaction, rol) {
+  if (rol.id === interaction.guildId) return '@everyone rolü verilemez.';
+  if (rol.managed) return 'Bot veya entegrasyon rolleri verilemez.';
+  if (rol.position >= interaction.guild.members.me.roles.highest.position) {
+    return `Botun rolü **${rol.name}** rolünün üstünde değil, bu rolü veremem. Sunucu Ayarları > Roller'den bot rolünü yukarı taşı.`;
+  }
+  if (!sahipMi(interaction.user.id) && interaction.guild.ownerId !== interaction.user.id) {
+    if (rol.position >= interaction.member.roles.highest.position) return `**${rol.name}** rolü, senin en yüksek rolüne eşit veya ondan yüksek. Bu rolü veremezsin.`;
+    if (rol.permissions.has(PermissionFlagsBits.Administrator) && !interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
+      return `**${rol.name}** rolü Yönetici izni taşıyor. Yönetici iznin olmadan bu rolü veremezsin.`;
+    }
+  }
+  return null;
+}
+
+module.exports = { rolHatasi, sahipMi, yetkiliMi, hedefHatasi, izinliMi, retMesaji };
