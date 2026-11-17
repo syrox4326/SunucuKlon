@@ -1,4 +1,4 @@
-// /otocevap ekle | sil | liste : mesajda bir ifade geçince botun otomatik cevap yazmasını ayarlar. (Admin ve üstü)
+// /otocevap ekle | sil | liste : mesajda bir ifade geçince botun otomatik cevap yazmasını ayarlar. (Moderator ve üstü)
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { RENK, taslak, hata, bilgi } = require('../utils/tasarim');
 const oto = require('../utils/otocevap');
@@ -6,7 +6,7 @@ const oto = require('../utils/otocevap');
 const kisalt = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
 
 module.exports = {
-  yetki: { enAzRol: 'Admin' },
+  yetki: { enAzRol: 'Moderator' },
   data: new SlashCommandBuilder()
     .setName('otocevap')
     .setDescription('Otomatik cevapları yönetir.')

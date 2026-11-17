@@ -6,6 +6,7 @@ const ayar = require('./utils/ayar');
 const { sahipMi, yetkiliMi } = require('./utils/yetki');
 const mute = require('./utils/mute');
 const otocevap = require('./utils/otocevap');
+const butonrol = require('./utils/butonrol');
 const { hata: hataKutusu } = require('./utils/tasarim');
 
 ayar.ayarlariDogrula();
@@ -38,6 +39,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (komut?.autocomplete) await komut.autocomplete(interaction).catch((e) => console.error('[autocomplete]', e.message));
     return;
   }
+  // Rol butonları herkese açıktır (kalıcı: kimlik rolün ID'sini taşır)
+  if (interaction.isButton() && interaction.customId.startsWith(butonrol.ONEK)) return butonrol.tikla(interaction);
   if (!interaction.isChatInputCommand()) return;
 
   const komut = client.commands.get(interaction.commandName);
