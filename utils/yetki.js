@@ -1,4 +1,5 @@
 // Komut yetkisi: bot sahibi her şeyi yapar; yetkili komutlarda sunucudaki yetkili roller (veritabanından) aranır.
+const { PermissionFlagsBits } = require('discord.js');
 const ayar = require('./ayar');
 const { yetkiliRoller } = require('./veritabani');
 
@@ -25,4 +26,18 @@ function hedefHatasi(interaction, client, kullanici, uye) {
   return null;
 }
 
-module.exports = { sahipMi, yetkiliMi, hedefHatasi };
+// Komutun `yetki` tanımına göre kullanım izni: { enAzRol: 'Admin' } veya { yonetici: true }; tanımsızsa sadece bot sahibi
+function izinliMi(interaction, yetki) {
+  if (sahipMi(interaction.user.id)) return true;
+  if (yetki?.yonetici) return interaction.memberPermissions?.has(PermissionFlagsBits.Administrator) ?? false;
+  if (yetki?.enAzRol) return yetkiliMi(interaction, yetki.enAzRol);
+  return false;
+}
+
+function retMesaji(yetki) {
+  if (yetki?.yonetici) return 'Bu komutu sadece yönetici iznine sahip olanlar kullanabilir.';
+  if (yetki?.enAzRol) return `Bu komutu en az **${yetki.enAzRol}** rolündeki yetkililer kullanabilir.`;
+  return 'Bu komutu sadece bot sahibi kullanabilir.';
+}
+
+module.exports = { sahipMi, yetkiliMi, hedefHatasi, izinliMi, retMesaji };

@@ -53,6 +53,26 @@ db.exec(`
     UNIQUE (guild_id, tetik)
   );
 
+  CREATE TABLE IF NOT EXISTS kayit_ayar (
+    guild_id        TEXT PRIMARY KEY,
+    kanal_id        TEXT NOT NULL,      -- kayıt komutunun çalıştığı tek kanal
+    kayitsiz_rol_id TEXT NOT NULL,      -- sunucuya girene otomatik verilir, kayıtta alınır
+    sohbet_id       TEXT NOT NULL,      -- yeni kayıt bildirimi buraya gider
+    rol_id          TEXT NOT NULL,      -- kaydedilene verilen roller
+    rol2_id         TEXT,
+    rol3_id         TEXT,
+    yetkili_rol_id  TEXT NOT NULL       -- kayıt yapabilen rol
+  );
+
+  CREATE TABLE IF NOT EXISTS kayitlar (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    guild_id   TEXT NOT NULL,
+    user_id    TEXT NOT NULL,
+    isim       TEXT NOT NULL,
+    yetkili_id TEXT NOT NULL,
+    zaman      INTEGER NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS meta (
     anahtar TEXT PRIMARY KEY,
     deger   TEXT

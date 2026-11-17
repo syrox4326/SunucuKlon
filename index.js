@@ -3,10 +3,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, GatewayIntentBits, Collection, Events, MessageFlags, REST, Routes, PermissionFlagsBits, IntentsBitField } = require('discord.js');
 const ayar = require('./utils/ayar');
-const { sahipMi, yetkiliMi } = require('./utils/yetki');
+const { sahipMi, izinliMi, retMesaji } = require('./utils/yetki');
 const mute = require('./utils/mute');
 const otocevap = require('./utils/otocevap');
 const butonrol = require('./utils/butonrol');
+const kayit = require('./utils/kayit');
 const { hata: hataKutusu } = require('./utils/tasarim');
 
 ayar.ayarlariDogrula();
@@ -46,12 +47,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
   const komut = client.commands.get(interaction.commandName);
   if (!komut) return;
 
-  // Güvenlik: varsayılan olarak komutlar sadece bot sahibine açık. `yetki` tanımlayan komutlar,
-  // sunucudaki yetkili rollere (veritabanı) de açılır: yetki: { enAzRol: 'Trial Moderator' }
-  const izinli = komut.yetki?.enAzRol ? yetkiliMi(interaction, komut.yetki.enAzRol) : sahipMi(interaction.user.id);
-  if (!izinli) {
-    const mesaj = komut.yetki?.enAzRol ? `Bu komutu en az **${komut.yetki.enAzRol}** rolündeki yetkililer kullanabilir.` : 'Bu komutu sadece bot sahibi kullanabilir.';
-    return interaction.reply({ embeds: [hataKutusu(mesaj)], flags: MessageFlags.Ephemeral });
+  // Güvenlik: varsayılan olarak komutlar sadece bot sahibine açık. `yetki` tanımlayan komutlar:
+  //   { enAzRol: 'Moderator' } -> sunucudaki yetkili roller (veritabanı), { yonetici: true } -> Yönetici izni
+  if (!izinliMi(interaction, komut.yetki)) {
+    return interaction.reply({ embeds: [hataKutusu(retMesaji(komut.yetki))], flags: MessageFlags.Ephemeral });
   }
 
   try {
@@ -72,12 +71,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
 process.on('unhandledRejection', (hata) => console.error('[Yakalanmamış hata]', hata));
 client.on(Events.Error, (hata) => console.error('[Discord istemci hatası]', hata));
 
-// Mesaj içeriğini okumak (otomatik cevap) Developer Portal'da "Message Content Intent" açıkken mümkündür.
-// Kapalıyken bu intent'i istemek girişi tamamen bozar; bu yüzden önce uygulamanın bayraklarına bakılır.
+// Mesaj içeriği ve üye listesi "ayrıcalıklı intent"tir: Developer Portal'da açık değilken istenirse giriş bozulur.
+// Bu yüzden önce uygulamanın bayraklarına bakılır, sadece açık olanlar istenir.
 const MESAJ_ICERIGI_BAYRAK = (1 << 18) | (1 << 19); // GATEWAY_MESSAGE_CONTENT (+ _LIMITED)
+const UYE_BAYRAK = (1 << 14) | (1 << 15); // GATEWAY_GUILD_MEMBERS (+ _LIMITED)
+
+client.on(Events.GuildMemberAdd, (uye) => kayit.uyeGirdi(uye).catch((e) => console.error('[uyeGirdi]', e.message)));
 
 client.on(Events.MessageCreate, async (mesaj) => {
   if (!client.mesajIcerigiAcik || mesaj.author.bot || !mesaj.guildId || !mesaj.content) return;
+  if (await kayit.mesajIsle(mesaj, client).catch((e) => { console.error('[kayit]', e); return true; })) return;
   const cevap = otocevap.eslestir(mesaj.guildId, mesaj.author.id, mesaj.content);
   if (!cevap) return;
   const izin = mesaj.channel.permissionsFor?.(mesaj.guild.members.me);
@@ -86,18 +89,23 @@ client.on(Events.MessageCreate, async (mesaj) => {
 });
 
 async function baslat() {
+  let bayrak = 0;
   try {
     const rest = new REST({ version: '10' }).setToken(ayar.token());
-    const uygulama = await rest.get(Routes.currentApplication());
-    client.mesajIcerigiAcik = Boolean(uygulama.flags & MESAJ_ICERIGI_BAYRAK);
+    bayrak = (await rest.get(Routes.currentApplication())).flags ?? 0;
   } catch {
-    client.mesajIcerigiAcik = false;
+    /* bayrak okunamazsa ayrıcalıklı intent istenmez */
   }
-  if (client.mesajIcerigiAcik) {
-    client.options.intents = new IntentsBitField([GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]);
-  } else {
-    console.warn('⚠️ Message Content Intent kapalı: otomatik cevaplar çalışmaz. Developer Portal > Bot > Message Content Intent açıp botu yeniden başlat.');
-  }
+  client.mesajIcerigiAcik = Boolean(bayrak & MESAJ_ICERIGI_BAYRAK);
+  client.uyeIntentAcik = Boolean(bayrak & UYE_BAYRAK);
+
+  const intentler = [GatewayIntentBits.Guilds];
+  if (client.mesajIcerigiAcik) intentler.push(GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent);
+  else console.warn('⚠️ Message Content Intent kapalı: otomatik cevap ve kayıt komutu çalışmaz.');
+  if (client.uyeIntentAcik) intentler.push(GatewayIntentBits.GuildMembers);
+  else console.warn('⚠️ Server Members Intent kapalı: yeni üyelere otomatik kayıtsız rolü verilemez.');
+  client.options.intents = new IntentsBitField(intentler);
+
   await client.login(ayar.token());
 }
 
