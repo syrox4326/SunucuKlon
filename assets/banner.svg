@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1360 480" width="1360" height="480">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B1020"/>
+      <stop offset=".6" stop-color="#11193A"/>
+      <stop offset="1" stop-color="#0A1B2E"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6A7BFF"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#6A7BFF"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="16"/></filter>
+  </defs>
+  <rect width="1360" height="480" fill="url(#bg)"/>
+  <!-- sağda dekoratif altıgenler -->
+  <g fill="none" stroke="url(#ring)" stroke-linejoin="round">
+    <polygon points="1120,40 1290,138 1290,334 1120,432 950,334 950,138" stroke-width="3" opacity=".22"/>
+    <polygon points="1120,100 1238,168 1238,304 1120,372 1002,304 1002,168" stroke-width="3" opacity=".14"/>
+    <polygon points="1120,160 1186,198 1186,274 1120,312 1054,274 1054,198" stroke-width="3" opacity=".10"/>
+  </g>
+  <!-- logo işareti -->
+  <g transform="translate(161 168) scale(.275)">
+    <polygon points="512,212 772,362 772,662 512,812 252,662 252,362" transform="translate(0 -212)" fill="none" stroke="url(#ring)" stroke-width="34" stroke-linejoin="round" opacity=".5" filter="url(#glow)"/>
+    <g transform="translate(0 -212)">
+      <polygon points="512,212 772,362 772,662 512,812 252,662 252,362" fill="#0E1330" fill-opacity=".7" stroke="url(#ring)" stroke-width="26" stroke-linejoin="round"/>
+      <g fill="none" stroke="#F4F6FF" stroke-width="40" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="428" y1="382" x2="428" y2="642"/>
+        <line x1="428" y1="512" x2="608" y2="382"/>
+        <line x1="428" y1="512" x2="608" y2="642"/>
+      </g>
+      <circle cx="608" cy="382" r="20" fill="#22D3EE"/>
+    </g>
+  </g>
+  <!-- yazı -->
+  <text x="430" y="256" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-weight="600" font-size="112" fill="#F4F6FF" letter-spacing="-2">Kerem’s Bot</text>
+  <rect x="434" y="292" width="96" height="6" rx="3" fill="url(#line)"/>
+  <text x="432" y="352" font-family="'Segoe UI','Segoe UI Light',Arial,sans-serif" font-size="36" fill="#9AA6D1" letter-spacing="1">Sunucu yönetimi, tek yerden.</text>
+</svg>
