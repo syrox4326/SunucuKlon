@@ -73,6 +73,17 @@ db.exec(`
     zaman      INTEGER NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS kayitsiz_log (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    guild_id   TEXT NOT NULL,
+    user_id    TEXT NOT NULL,
+    yetkili_id TEXT NOT NULL,
+    sebep      TEXT,
+    roller     TEXT NOT NULL,           -- alınan rollerin ID'leri (JSON) - gerekirse geri vermek için
+    isim       TEXT,                    -- sıfırlanmadan önceki takma ad
+    zaman      INTEGER NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS meta (
     anahtar TEXT PRIMARY KEY,
     deger   TEXT
